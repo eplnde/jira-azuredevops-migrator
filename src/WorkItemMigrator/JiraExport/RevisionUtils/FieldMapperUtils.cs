@@ -137,7 +137,32 @@ namespace JiraExport
             return (true, value);
         }
 
+        public static object MapSecToHours(string seconds)
+        {
+            if (seconds == null)
+                throw new ArgumentNullException(nameof(seconds));
 
+            if (string.IsNullOrWhiteSpace(seconds))
+                return string.Empty;
+
+            float hours = float.Parse(seconds)/3600;
+
+            return (hours.ToString(CultureInfo.CreateSpecificCulture("en-GB")));
+        }
+
+        public static object MapYesNo(string value)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            if (value.Equals("yes", StringComparison.OrdinalIgnoreCase))
+                return "True";
+
+            return "False";
+        }
 
         public static object MapTags(string labels)
         {

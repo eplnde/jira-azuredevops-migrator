@@ -38,6 +38,8 @@ namespace JiraExport
 
             var wiItem = new WiItem();
 
+
+
             if (_config.TypeMap.Types != null)
             {
                 var type = (from t in _config.TypeMap.Types where t.Source == issue.Type select t.Target).FirstOrDefault();
@@ -103,8 +105,14 @@ namespace JiraExport
                             case "MapSprint":
                                 value = IfChanged<string>(item.Source, isCustomField, FieldMapperUtils.MapSprint);
                                 break;
+                            case "MapYesNo":
+                                value = IfChanged<string>(item.Source, isCustomField, FieldMapperUtils.MapYesNo);
+                                break;
                             case "MapTags":
                                 value = IfChanged<string>(item.Source, isCustomField, FieldMapperUtils.MapTags);
+                                break;
+                            case "MapSecToHours":
+                                value = IfChanged<string>(item.Source, isCustomField, FieldMapperUtils.MapSecToHours);
                                 break;
                             case "MapArray":
                                 value = IfChanged<string>(item.Source, isCustomField, FieldMapperUtils.MapArray);
@@ -390,6 +398,25 @@ namespace JiraExport
             {
                 if (r.Fields.TryGetValue(sourceField.ToLower(), out object value))
                 {
+                    foreach (var checkFiled in _config.FieldMap.Fields)
+                    {
+                        if (checkFiled.Source.ToLower().Equals(sourceField.ToLower()))
+                        {
+                            if (checkFiled.Mapper != null && checkFiled.Mapper.Equals("MapNoHistory"))
+                            {
+                                Logger.Log(LogLevel.Debug, $"EPLNDE, ifChanged, skip history for {sourceField}");
+                                foreach (var parentField in r.ParentItem.fieldsTemp)
+                                {
+                                    if (parentField.Key.Equals(sourceField.ToLower()))
+                                    {
+                                        Logger.Log(LogLevel.Debug, $"EPLNDE, ifChanged use {parentField.Value} for  {parentField.Key}");
+                                        return (true, parentField.Value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
                     if (mapperFunc != null)
                     {
                         return (true, mapperFunc((T)value));
